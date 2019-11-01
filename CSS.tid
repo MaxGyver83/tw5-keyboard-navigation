@@ -1,0 +1,10 @@
+created: 20190621094602422
+modified: 20191101072404775
+tags: $:/tags/Stylesheet
+title: CSS
+type: text/vnd.tiddlywiki
+
+div.tc-tiddler-frame.activeTiddler {
+  border-left: 3px solid #557AFF;
+}
+

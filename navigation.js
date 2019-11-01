@@ -4,7 +4,7 @@
 /*global $tw: false */
 "use strict";
 
-exports.name = "tw-keyboard-navigation"; exports.after = ["rootwidget"];
+exports.name = "tw5-keyboard-navigation"; exports.after = ["rootwidget"];
 
 exports.startup = function () {
 
@@ -16,6 +16,18 @@ const SMOOTH_SCROLLING = false;
 const MARK_CURRENT_TIDDLER = true;
 // tiddler's top position should be +/- LIMIT pixels in order to be considered the topmost
 const LIMIT = 50;
+
+var tiddler_index = -1;
+
+
+function isInViewport(el) {
+	var rect = el.getBoundingClientRect();
+	return (
+		rect.top >= 0 &&
+		rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)
+	);
+}
+
 
 function isElementCloseToTop(el) {
 	var rect = el.getBoundingClientRect();
@@ -31,14 +43,12 @@ function findTopmostTiddler(tiddlers) {
 	return i;
 }
 
-var tiddler_index = 0;
-
 
 document.onkeyup = function(e) {
 	if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
 
 	var activeElement = document.activeElement;
-    if (activeElement && activeElement.tagName.toLowerCase() == "textarea") return;
+	if (activeElement && activeElement.tagName.toLowerCase() == "textarea") return;
 	if (activeElement && activeElement.tagName.toLowerCase() == "input") {
 		if (e.code == "Escape") {
 			// unfocus search box
@@ -53,7 +63,7 @@ document.onkeyup = function(e) {
 
 	var last_tiddler_index = tiddler_index;
 	if (e.code == "KeyJ" || e.code == "KeyK") {
-		if (!isElementCloseToTop(tiddlers[tiddler_index])) {
+		if (tiddler_index < 0 || (!isInViewport(tiddlers[tiddler_index]) && !isElementCloseToTop(tiddlers[tiddler_index]))) {
 			tiddler_index = findTopmostTiddler(tiddlers);
 			if (e.code == "KeyJ") tiddler_index -= 1;
 		}
@@ -71,7 +81,8 @@ document.onkeyup = function(e) {
 		else
 			tiddlers[tiddler_index].scrollIntoView();
 		if (MARK_CURRENT_TIDDLER) {
-			tiddlers[last_tiddler_index].classList.remove("activeTiddler");
+			if (last_tiddler_index >= 0)
+				tiddlers[last_tiddler_index].classList.remove("activeTiddler");
 			tiddlers[tiddler_index].classList.add("activeTiddler");
 		}
 	} else if (e.code == "KeyC") {

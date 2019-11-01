@@ -38,6 +38,7 @@ document.onkeyup = function(e) {
 	if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
 
 	var activeElement = document.activeElement;
+    if (activeElement && activeElement.tagName.toLowerCase() == "textarea") return;
 	if (activeElement && activeElement.tagName.toLowerCase() == "input") {
 		if (e.code == "Escape") {
 			// unfocus search box

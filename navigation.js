@@ -87,10 +87,14 @@ document.onkeyup = function(e) {
 		}
 	} else if (e.code == "KeyC") {
 		// close current tiddler
-		tiddler_index = findTopmostTiddler(tiddlers);
+		if (tiddler_index < 0) return;
+		if (!isInViewport(tiddlers[tiddler_index])) return;
 		var button = tiddlers[tiddler_index].getElementsByClassName('tc-btn-%24%3A%2Fcore%2Fui%2FButtons%2Fclose')[0];
 		button.click();
-	} else if (e.code == "KeyE" && e.key != "ArrowUp") {
+		if (tiddler_index >= tiddlers.length - 1) tiddler_index--;
+		if (MARK_CURRENT_TIDDLER)
+			tiddlers[tiddler_index].classList.add("activeTiddler");
+    } else if (e.code == "KeyE" && e.key != "ArrowUp") {
 		// check for ArrowUp because AltGr+E is ArrowUp in Neo2, AdNW, KOY and other keyboard layouts
 		// edit current tiddler
 		tiddler_index = findTopmostTiddler(tiddlers);

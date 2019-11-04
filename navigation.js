@@ -23,8 +23,8 @@ var tiddler_index = -1;
 function isInViewport(el) {
 	var rect = el.getBoundingClientRect();
 	return (
-		rect.top >= 0 &&
-		rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)
+		rect.bottom > 0 &&
+		rect.top < (window.innerHeight || document.documentElement.clientHeight)
 	);
 }
 
@@ -91,7 +91,8 @@ document.onkeyup = function(e) {
 		if (!isInViewport(tiddlers[tiddler_index])) return;
 		var button = tiddlers[tiddler_index].getElementsByClassName('tc-btn-%24%3A%2Fcore%2Fui%2FButtons%2Fclose')[0];
 		button.click();
-		if (tiddler_index >= tiddlers.length - 1) tiddler_index--;
+        if (tiddlers.length == 1) return;  // no tiddler left (after closing the last one)
+		if (tiddler_index >= tiddlers.length - 1) tiddler_index = tiddlers.length-2;
 		if (MARK_CURRENT_TIDDLER)
 			tiddlers[tiddler_index].classList.add("activeTiddler");
     } else if (e.code == "KeyE" && e.key != "ArrowUp") {

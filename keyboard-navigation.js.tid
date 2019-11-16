@@ -1,3 +1,10 @@
+created: 20191026223026465
+modified: 20191101073819704
+module-type: startup
+tags: 
+title: keyboard-navigation.js
+type: application/javascript
+
 (function () {
 
 /*jslint node: false, browser: true */
@@ -91,14 +98,16 @@ document.onkeyup = function(e) {
 		if (!isInViewport(tiddlers[tiddler_index])) return;
 		var button = tiddlers[tiddler_index].getElementsByClassName('tc-btn-%24%3A%2Fcore%2Fui%2FButtons%2Fclose')[0];
 		button.click();
-        if (tiddlers.length == 1) return;  // no tiddler left (after closing the last one)
+		if (tiddlers.length == 1) return;  // no tiddler left (after closing the last one)
 		if (tiddler_index >= tiddlers.length - 1) tiddler_index = tiddlers.length-2;
 		if (MARK_CURRENT_TIDDLER)
 			tiddlers[tiddler_index].classList.add("activeTiddler");
-    } else if (e.code == "KeyE" && e.key != "ArrowUp") {
+	} else if (e.code == "KeyE" && e.key != "ArrowUp") {
 		// check for ArrowUp because AltGr+E is ArrowUp in Neo2, AdNW, KOY and other keyboard layouts
 		// edit current tiddler
-		tiddler_index = findTopmostTiddler(tiddlers);
+		//tiddler_index = findTopmostTiddler(tiddlers);
+		if (tiddler_index < 0) return;
+		if (!isInViewport(tiddlers[tiddler_index])) return;
 		var button = tiddlers[tiddler_index].getElementsByClassName('tc-btn-%24%3A%2Fcore%2Fui%2FButtons%2Fedit')[0];
 		button.click();
 	}

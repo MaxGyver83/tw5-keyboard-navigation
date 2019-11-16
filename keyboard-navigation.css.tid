@@ -1,7 +1,7 @@
 created: 20190621094602422
 modified: 20191101072404775
 tags: $:/tags/Stylesheet
-title: navigation.css
+title: keyboard-navigation.css
 type: text/vnd.tiddlywiki
 
 div.tc-tiddler-frame.activeTiddler {

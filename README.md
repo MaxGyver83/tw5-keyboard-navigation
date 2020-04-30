@@ -9,3 +9,5 @@ Press `Esc` to unfocus the sidebar search field.
 Then you can jump to the next or previous open tiddler in the story river by pressing `j` or `k`, respectively.
 Press `e` if you want to edit the current tiddler. Press `Ctrl+Return` when you're done (as usual).
 `c` is for closing a tiddler.
+
+When you search your TiddlyWiki, just press `Return` to open or `Tab` to focus the first match (without this plugin you have to press `Tab` four times).

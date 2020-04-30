@@ -19,12 +19,12 @@ exports.startup = function () {
 var activeElement = document.activeElement;
 activeElement.blur();
 
-const SMOOTH_SCROLLING = false;
 const MARK_CURRENT_TIDDLER = true;
 // tiddler's top position should be +/- LIMIT pixels in order to be considered the topmost
 const LIMIT = 50;
 
 var tiddler_index = -1;
+var timestamp_last_navigation = 0;
 
 
 function isInViewport(el) {
@@ -50,6 +50,32 @@ function findTopmostTiddler(tiddlers) {
 	return i;
 }
 
+
+document.onkeydown = function(e) {
+	if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
+
+	var activeElement = document.activeElement;
+	if (activeElement && activeElement.tagName.toLowerCase() == "textarea") return;
+	if (activeElement && activeElement.tagName.toLowerCase() == "input"
+			&& activeElement.type == "search"
+			&& activeElement.classList.contains("tc-popup-handle")) {
+		if (e.key == "Tab" || e.key == "Enter") {
+			// if in search box and there are matches, jump to (and open) first match
+			var elements = document.getElementsByClassName("tc-search-results");
+			if (!elements) return;
+			if (!elements[0]) return;
+			if (!elements[0].getElementsByTagName("div")[0]) return;
+			if (!elements[0].getElementsByTagName("div")[0].children[0]) return;
+			// focus first match (if any)
+			elements[0].getElementsByTagName("div")[0].children[0].focus();
+			if (e.key == "Enter") {
+				// when Enter was pressed, also open the first match
+				elements[0].getElementsByTagName("div")[0].children[0].click();
+			}
+			e.preventDefault();
+		}
+	}
+}
 
 document.onkeyup = function(e) {
 	if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
@@ -83,10 +109,14 @@ document.onkeyup = function(e) {
 			tiddler_index -= 1;
 			if (tiddler_index < 0) tiddler_index = tiddlers.length - 1;
 		}
-		if (SMOOTH_SCROLLING)
-			tiddlers[tiddler_index].scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"});
-		else
+		if (Date.now() - timestamp_last_navigation < 800) { // milliseconds
+			// if user navigates quickly, jump instantly to next or previous tiddler
 			tiddlers[tiddler_index].scrollIntoView();
+		} else {
+			// scroll smoothly to next or previous tiddler
+			tiddlers[tiddler_index].scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"});
+		}
+		timestamp_last_navigation = Date.now();
 		if (MARK_CURRENT_TIDDLER) {
 			if (last_tiddler_index >= 0)
 				tiddlers[last_tiddler_index].classList.remove("activeTiddler");

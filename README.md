@@ -2,7 +2,7 @@
 Navigate through your TiddlyWiki5 with your keyboard: jump to next/previous tiddler, edit or close tiddler
 
 ## Demonstration/Installation
-Check [this demonstation](http://maximilian-schillinger.de/tw5-keyboard-navigation-plugin.html) of tw-keyboard-navigation! You can integrate `tw5-keyboard-navigation` by dragging the plugin tiddler from the demo page into your TiddlyWiki.
+Check [this demonstration](https://maximilian-schillinger.de/tw5-keyboard-navigation-plugin.html) of tw-keyboard-navigation! You can integrate `tw5-keyboard-navigation` by dragging the plugin tiddler from the demo page into your TiddlyWiki.
 
 ## How to use
 Press `Esc` to unfocus the sidebar search field.

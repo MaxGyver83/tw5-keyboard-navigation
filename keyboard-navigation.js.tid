@@ -1,5 +1,5 @@
 created: 20191026223026465
-modified: 20191101073819704
+modified: 20200511215226000
 module-type: startup
 tags: 
 title: keyboard-navigation.js
@@ -15,17 +15,17 @@ exports.name = "tw5-keyboard-navigation"; exports.after = ["rootwidget"];
 
 exports.startup = function () {
 
-// unselect search box on startup
-var activeElement = document.activeElement;
-activeElement.blur();
-
 const MARK_CURRENT_TIDDLER = true;
 // tiddler's top position should be +/- LIMIT pixels in order to be considered the topmost
 const LIMIT = 50;
 
+var ignoreKeyboardLayout = false;
 var tiddler_index = -1;
 var timestamp_last_navigation = 0;
 
+// unselect search box on startup
+var activeElement = document.activeElement;
+activeElement.blur();
 
 function isInViewport(el) {
 	var rect = el.getBoundingClientRect();
@@ -94,13 +94,22 @@ document.onkeyup = function(e) {
 	var tiddlers = document.getElementsByClassName('tc-tiddler-frame');
 	if (tiddlers.length == 0) return;
 
+	var tiddlerIgnoreKeyboardLayout = $tw.wiki.getTiddler("$:/config/IgnoreKeyboardLayout");
+	ignoreKeyboardLayout = (tiddlerIgnoreKeyboardLayout.fields.text == "1");
+
+	var j_released = ignoreKeyboardLayout ? (e.code == "KeyJ") : (e.key == "j");
+	var k_released = ignoreKeyboardLayout ? (e.code == "KeyK") : (e.key == "k");
+	var c_released = ignoreKeyboardLayout ? (e.code == "KeyC") : (e.key == "c");
+	// e: check for ArrowUp because AltGr+E is ArrowUp in Neo2, AdNW, KOY and other keyboard layouts
+	var e_released = ignoreKeyboardLayout ? (e.code == "KeyE" && e.key != "ArrowUp") : (e.key == "e");
+
 	var last_tiddler_index = tiddler_index;
-	if (e.code == "KeyJ" || e.code == "KeyK") {
+	if (j_released || k_released) {
 		if (tiddler_index < 0 || (!isInViewport(tiddlers[tiddler_index]) && !isElementCloseToTop(tiddlers[tiddler_index]))) {
 			tiddler_index = findTopmostTiddler(tiddlers);
-			if (e.code == "KeyJ") tiddler_index -= 1;
+			if (j_released) tiddler_index -= 1;
 		}
-		if (e.code == "KeyJ") {
+		if (j_released) {
 			// go down
 			tiddler_index += 1;
 			if (tiddler_index >= tiddlers.length) tiddler_index = 0;
@@ -122,7 +131,7 @@ document.onkeyup = function(e) {
 				tiddlers[last_tiddler_index].classList.remove("activeTiddler");
 			tiddlers[tiddler_index].classList.add("activeTiddler");
 		}
-	} else if (e.code == "KeyC") {
+	} else if (c_released) {
 		// close current tiddler
 		if (tiddler_index < 0) return;
 		if (!isInViewport(tiddlers[tiddler_index])) return;
@@ -132,8 +141,7 @@ document.onkeyup = function(e) {
 		if (tiddler_index >= tiddlers.length - 1) tiddler_index = tiddlers.length-2;
 		if (MARK_CURRENT_TIDDLER)
 			tiddlers[tiddler_index].classList.add("activeTiddler");
-	} else if (e.code == "KeyE" && e.key != "ArrowUp") {
-		// check for ArrowUp because AltGr+E is ArrowUp in Neo2, AdNW, KOY and other keyboard layouts
+	} else if (e_released) {
 		// edit current tiddler
 		//tiddler_index = findTopmostTiddler(tiddlers);
 		if (tiddler_index < 0) return;

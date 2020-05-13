@@ -61,18 +61,15 @@ document.onkeydown = function(e) {
 			&& activeElement.classList.contains("tc-popup-handle")) {
 		if (e.key == "Tab" || e.key == "Enter") {
 			// if in search box and there are matches, jump to (and open) first match
-			var elements = document.getElementsByClassName("tc-search-results");
-			if (!elements) return;
-			if (!elements[0]) return;
-			if (!elements[0].getElementsByTagName("div")[0]) return;
-			if (!elements[0].getElementsByTagName("div")[0].children[0]) return;
-			// focus first match (if any)
-			elements[0].getElementsByTagName("div")[0].children[0].focus();
-			if (e.key == "Enter") {
-				// when Enter was pressed, also open the first match
-				elements[0].getElementsByTagName("div")[0].children[0].click();
+			var searchItems = document.querySelector("div.tc-search-results div.tc-menu-list-item")
+			if (searchItems) {
+				searchItems.children[0].focus();
+				if (e.key == "Enter") {
+					// when Enter was pressed, also open the first match
+					searchItems.children[0].click();
+				}
+				e.preventDefault();
 			}
-			e.preventDefault();
 		}
 	}
 }

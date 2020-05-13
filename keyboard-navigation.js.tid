@@ -136,6 +136,7 @@ document.onkeyup = function(e) {
 		if (tiddler_index < 0) return;
 		if (!isInViewport(tiddlers[tiddler_index])) return;
 		var button = tiddlers[tiddler_index].getElementsByClassName('tc-btn-%24%3A%2Fcore%2Fui%2FButtons%2Fclose')[0];
+		if (!button) return;
 		button.click();
 		if (tiddlers.length == 1) return;  // no tiddler left (after closing the last one)
 		if (tiddler_index >= tiddlers.length - 1) tiddler_index = tiddlers.length-2;

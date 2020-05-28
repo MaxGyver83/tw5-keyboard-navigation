@@ -1,5 +1,5 @@
 created: 20191026223026465
-modified: 20200511215226000
+modified: 20200528221523000
 module-type: startup
 tags: 
 title: keyboard-navigation.js
@@ -26,6 +26,38 @@ var timestamp_last_navigation = 0;
 // unselect search box on startup
 var activeElement = document.activeElement;
 activeElement.blur();
+
+// mark first tiddler on startup
+if (MARK_CURRENT_TIDDLER) {
+	var tiddlers = document.getElementsByClassName('tc-tiddler-frame');
+	if (tiddlers.length > 0) {
+		tiddler_index = 0;
+		tiddlers[tiddler_index].classList.add("activeTiddler");
+	}
+}
+
+
+// refresh active tiddler marker after page refresh (p.e. after editing a tiddler)
+$tw.hooks.addHook("th-page-refreshed", function() {
+	if (MARK_CURRENT_TIDDLER) {
+		tiddlers[tiddler_index].classList.add("activeTiddler");
+	}
+});
+
+
+// mark new tiddler after navigating to it
+$tw.hooks.addHook("th-navigating", function(event) {
+	for (var i=0; i<tiddlers.length; i++) {
+		if (tiddlers[i].attributes.getNamedItem('data-tiddler-title').value == event.navigateTo) {
+			tiddlers[tiddler_index].classList.remove("activeTiddler");
+			tiddler_index = i;
+			tiddlers[tiddler_index].classList.add("activeTiddler");
+			break;
+		}
+	}
+	return event;
+});
+
 
 function isInViewport(el) {
 	var rect = el.getBoundingClientRect();
@@ -137,10 +169,17 @@ document.onkeyup = function(e) {
 		if (!isInViewport(tiddlers[tiddler_index])) return;
 		var button = tiddlers[tiddler_index].getElementsByClassName('tc-btn-%24%3A%2Fcore%2Fui%2FButtons%2Fclose')[0];
 		button.click();
-		if (tiddlers.length == 1) return;  // no tiddler left (after closing the last one)
-		if (tiddler_index >= tiddlers.length - 1) tiddler_index = tiddlers.length-2;
-		if (MARK_CURRENT_TIDDLER)
-			tiddlers[tiddler_index].classList.add("activeTiddler");
+		if (tiddlers.length == 1) return;  // no tiddler left (after closing the only one)
+		// the next tiddler becomes the active one; if the last one was closed, the one before will be activated
+		if (tiddler_index >= tiddlers.length - 1) {
+			tiddler_index = tiddlers.length - 2;
+			if (MARK_CURRENT_TIDDLER)
+				tiddlers[tiddler_index].classList.add("activeTiddler");
+		} else {
+			if (MARK_CURRENT_TIDDLER)
+				// use tiddler_index + 1 because the `tiddlers` array wasn't yet updated
+				tiddlers[tiddler_index+1].classList.add("activeTiddler");
+		}
 	} else if (e_released) {
 		// edit current tiddler
 		//tiddler_index = findTopmostTiddler(tiddlers);

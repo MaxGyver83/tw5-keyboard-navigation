@@ -1,5 +1,5 @@
 created: 20191103104315571
-modified: 20200511221340000
+modified: 20200601161649000
 tags: 
 title: $:/plugins/MaxGyver83/tw5-keyboard-navigation/readme
 
@@ -18,3 +18,6 @@ There is a public [[github repository|https://github.com/MaxGyver83/tw5-keyboard
 
 !! Author
 [[Max Schillinger|https://www.maximilian-schillinger.de]]
+
+!! Contributer
+[[Soren Bjornstad|https://github.com/sobjornstad]]

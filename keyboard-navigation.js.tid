@@ -1,5 +1,5 @@
 created: 20191026223026465
-modified: 20200528221523000
+modified: 20200903144859000
 module-type: startup
 tags: 
 title: keyboard-navigation.js
@@ -20,7 +20,9 @@ const MARK_CURRENT_TIDDLER = true;
 const LIMIT = 50;
 
 var ignoreKeyboardLayout = false;
+var tiddlers;
 var tiddler_index = -1;
+var tiddler_title = "";
 var timestamp_last_navigation = 0;
 
 // unselect search box on startup
@@ -28,10 +30,10 @@ var activeElement = document.activeElement;
 activeElement.blur();
 
 // mark first tiddler on startup
-if (MARK_CURRENT_TIDDLER) {
-	var tiddlers = document.getElementsByClassName('tc-tiddler-frame');
-	if (tiddlers.length > 0) {
-		tiddler_index = 0;
+tiddlers = document.getElementsByClassName("tc-tiddler-frame");
+if (tiddlers.length > 0) {
+	tiddler_index = 0;
+	if (MARK_CURRENT_TIDDLER) {
 		tiddlers[tiddler_index].classList.add("activeTiddler");
 	}
 }
@@ -39,24 +41,65 @@ if (MARK_CURRENT_TIDDLER) {
 
 // refresh active tiddler marker after page refresh (p.e. after editing a tiddler)
 $tw.hooks.addHook("th-page-refreshed", function() {
-	if (MARK_CURRENT_TIDDLER) {
-		tiddlers[tiddler_index].classList.add("activeTiddler");
+	if (MARK_CURRENT_TIDDLER && tiddler_index >= 0) {
+		tiddlers = document.getElementsByClassName("tc-tiddler-frame");
+		var index = -1;
+		for (var i=0; i<tiddlers.length; i++) {
+			if (tiddlers[i].getAttribute("data-tiddler-title") == tiddler_title) {
+				tiddlers[i].classList.add("activeTiddler");
+				index = i;
+			} else {
+				tiddlers[i].classList.remove("activeTiddler");
+			}
+		}
+		if (index >= 0 && tiddlers[index].style.opacity === "0") {
+			// Apparently the activated tiddler was closed. Select next one.
+			tiddlers[index].classList.remove("activeTiddler");
+			if (tiddlers.length <= 1) {
+				// no tiddler left (because the last one is invisible)
+				tiddler_index = -1;
+				tiddler_title = "";
+				return;
+			}
+			if (index + 1 < tiddlers.length) { index++; }
+			else { index--; }
+			tiddlers[index].classList.add("activeTiddler");
+			tiddler_index = index;
+			tiddler_title = tiddlers[index].getAttribute("data-tiddler-title");
+		}
 	}
+});
+
+
+// get name of new/edited tiddler after saving
+$tw.hooks.addHook("th-saving-tiddler", function(tiddler) {
+	tiddler_title = tiddler.getFieldString("title");
+	return tiddler;
 });
 
 
 // mark new tiddler after navigating to it
 $tw.hooks.addHook("th-navigating", function(event) {
+	tiddler_title = event.navigateTo;
+	tiddlers = document.getElementsByClassName("tc-tiddler-frame");
 	for (var i=0; i<tiddlers.length; i++) {
-		if (tiddlers[i].attributes.getNamedItem('data-tiddler-title').value == event.navigateTo) {
-			tiddlers[tiddler_index].classList.remove("activeTiddler");
+		if (tiddlers[i].getAttribute("data-tiddler-title") == tiddler_title) {
+			if (MARK_CURRENT_TIDDLER) {
+				if (tiddlers[tiddler_index] !== undefined)
+					tiddlers[tiddler_index].classList.remove("activeTiddler");
+				tiddlers[i].classList.add("activeTiddler");
+			}
 			tiddler_index = i;
-			tiddlers[tiddler_index].classList.add("activeTiddler");
 			break;
 		}
 	}
 	return event;
 });
+
+
+function getActiveTiddlersTitle() {
+	tiddler_title = tiddlers[tiddler_index].getAttribute("data-tiddler-title");
+}
 
 
 function isInViewport(el) {
@@ -120,7 +163,7 @@ document.onkeyup = function(e) {
 		return;
 	}
 
-	var tiddlers = document.getElementsByClassName('tc-tiddler-frame');
+	tiddlers = document.getElementsByClassName("tc-tiddler-frame");
 	if (tiddlers.length == 0) return;
 
 	var tiddlerIgnoreKeyboardLayout = $tw.wiki.getTiddler("$:/config/IgnoreKeyboardLayout");
@@ -132,6 +175,18 @@ document.onkeyup = function(e) {
 	// e: check for ArrowUp because AltGr+E is ArrowUp in Neo2, AdNW, KOY and other keyboard layouts
 	var e_released = ignoreKeyboardLayout ? (e.code == "KeyE" && e.key != "ArrowUp") : (e.key == "e");
 
+	if (tiddler_title) {
+		if (tiddler_index < 0 || tiddler_index >= tiddlers.length || tiddlers[tiddler_index].getAttribute("data-tiddler-title") != tiddler_title) {
+			tiddler_index = -1;
+			// find correct index (after editing or creating a new tiddler)
+			for (var i=0; i<tiddlers.length; i++) {
+				if (tiddlers[i].getAttribute("data-tiddler-title") == tiddler_title) {
+					tiddler_index = i;
+					break;
+				}
+			}
+		}
+	}
 	var last_tiddler_index = tiddler_index;
 	if (j_released || k_released) {
 		if (tiddler_index < 0 || (!isInViewport(tiddlers[tiddler_index]) && !isElementCloseToTop(tiddlers[tiddler_index]))) {
@@ -160,11 +215,12 @@ document.onkeyup = function(e) {
 				tiddlers[last_tiddler_index].classList.remove("activeTiddler");
 			tiddlers[tiddler_index].classList.add("activeTiddler");
 		}
+		getActiveTiddlersTitle();
 	} else if (c_released) {
 		// close current tiddler
-		if (tiddler_index < 0) return;
+		if (tiddlers[tiddler_index] === undefined) return;
 		if (!isInViewport(tiddlers[tiddler_index])) return;
-		var button = tiddlers[tiddler_index].getElementsByClassName('tc-btn-%24%3A%2Fcore%2Fui%2FButtons%2Fclose')[0];
+		var button = tiddlers[tiddler_index].getElementsByClassName("tc-btn-%24%3A%2Fcore%2Fui%2FButtons%2Fclose")[0];
 		if (!button) return;
 		button.click();
 		if (tiddlers.length == 1) return;  // no tiddler left (after closing the only one)
@@ -178,13 +234,15 @@ document.onkeyup = function(e) {
 				// use tiddler_index + 1 because the `tiddlers` array wasn't yet updated
 				tiddlers[tiddler_index+1].classList.add("activeTiddler");
 		}
+		getActiveTiddlersTitle();
 	} else if (e_released) {
 		// edit current tiddler
 		//tiddler_index = findTopmostTiddler(tiddlers);
-		if (tiddler_index < 0) return;
+		if (tiddlers[tiddler_index] === undefined) return;
 		if (!isInViewport(tiddlers[tiddler_index])) return;
-		var button = tiddlers[tiddler_index].getElementsByClassName('tc-btn-%24%3A%2Fcore%2Fui%2FButtons%2Fedit')[0];
+		var button = tiddlers[tiddler_index].getElementsByClassName("tc-btn-%24%3A%2Fcore%2Fui%2FButtons%2Fedit")[0];
 		button.click();
+		getActiveTiddlersTitle();
 	}
 };
 

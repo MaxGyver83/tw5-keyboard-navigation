@@ -2,7 +2,7 @@
     "title": "$:/plugins/MaxGyver83/tw5-keyboard-navigation",
     "description": "Keyboard navigation: jump to next/previous tiddler, edit or close tiddler",
     "author": "Max Schillinger",
-    "version": "0.4.1",
+    "version": "0.4.2",
     "core-version": ">=5.1.21",
     "source": "https://github.com/MaxGyver83/tw5-keyboard-navigation",
     "plugin-type": "plugin",

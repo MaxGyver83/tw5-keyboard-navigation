@@ -1,6 +1,7 @@
 created: 20200511221340000
-modified: 20200511221340000
+modified: 20200922145300000
 tags: 
 title: $:/plugins/MaxGyver83/tw5-keyboard-navigation/config
 
-<$checkbox tiddler="$:/config/IgnoreKeyboardLayout" field="text" checked="1" unchecked="0" default="0"> Ignore keyboard layout (act as if it's QWERTY)</$checkbox>
+<$checkbox tiddler="$:/config/IgnoreKeyboardLayout" field="text" checked="1" unchecked="0" default="0"> Ignore keyboard layout (act as if it's QWERTY)</$checkbox><br>
+<$checkbox tiddler="$:/config/Cycle" field="text" checked="1" unchecked="0" default="0"> Jump to first tiddler after end of list</$checkbox>

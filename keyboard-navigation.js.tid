@@ -1,5 +1,5 @@
 created: 20191026223026465
-modified: 20200903144859000
+modified: 20200922144859000
 module-type: startup
 tags: 
 title: keyboard-navigation.js
@@ -20,6 +20,7 @@ const MARK_CURRENT_TIDDLER = true;
 const LIMIT = 50;
 
 var ignoreKeyboardLayout = false;
+var cycle = false;
 var tiddlers;
 var tiddler_index = -1;
 var tiddler_title = "";
@@ -167,7 +168,10 @@ document.onkeyup = function(e) {
 	if (tiddlers.length == 0) return;
 
 	var tiddlerIgnoreKeyboardLayout = $tw.wiki.getTiddler("$:/config/IgnoreKeyboardLayout");
-	ignoreKeyboardLayout = (tiddlerIgnoreKeyboardLayout.fields.text == "1");
+	ignoreKeyboardLayout = (tiddlerIgnoreKeyboardLayout.fields.text.trim() == "1");
+
+	var tiddlerCycle = $tw.wiki.getTiddler("$:/config/Cycle");
+	cycle = (tiddlerCycle.fields.text.trim() == "1");
 
 	var j_released = ignoreKeyboardLayout ? (e.code == "KeyJ") : (e.key == "j");
 	var k_released = ignoreKeyboardLayout ? (e.code == "KeyK") : (e.key == "k");
@@ -196,11 +200,11 @@ document.onkeyup = function(e) {
 		if (j_released) {
 			// go down
 			tiddler_index += 1;
-			if (tiddler_index >= tiddlers.length) tiddler_index = 0;
+			if (tiddler_index >= tiddlers.length) tiddler_index = cycle ? 0 : tiddlers.length - 1;
 		} else  {  // e.code == "KeyK"
 			// go up
 			tiddler_index -= 1;
-			if (tiddler_index < 0) tiddler_index = tiddlers.length - 1;
+			if (tiddler_index < 0) tiddler_index = cycle ? tiddlers.length - 1 : 0;
 		}
 		if (Date.now() - timestamp_last_navigation < 800) { // milliseconds
 			// if user navigates quickly, jump instantly to next or previous tiddler

@@ -206,7 +206,7 @@ document.onkeyup = function(e) {
 	var up_key_released = ignoreKeyboardLayout ? (e.code == ("Key" + navigate_up_key.toUpperCase())) : (e.key == navigate_up_key);
 	var other_bind_used = Object.keys(bindings).find(k => {
 		if (!bindings[k]) return false;
-		if (ignoreKeyboardLayout) return e.code == ("Key" + bindings[k].toUpperCase()) && !alternateLayoutIgnoreKeys.find(k => k == e.key);
+		if (ignoreKeyboardLayout) return e.code == ("Key" + bindings[k].toUpperCase()) && !alternateLayoutIgnoreKeys.find(ak => ak == e.key);
 		return e.key == bindings[k];
 	})
 

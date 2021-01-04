@@ -1,5 +1,7 @@
 # tw5-keyboard-navigation
-Navigate through your TiddlyWiki5 with your keyboard: jump to next/previous tiddler, edit or close tiddler
+Navigate through your TiddlyWiki5 with your keyboard: jump to next/previous tiddler, edit, close, and more.
+
+Any actions that can be performed by the view toolbar buttons can be performed with keybinds using this plugin.
 
 ## Demonstration/Installation
 Check [this demonstration](https://maximilian-schillinger.de/tw5-keyboard-navigation-plugin.html) of tw-keyboard-navigation! You can integrate `tw5-keyboard-navigation` by dragging the plugin tiddler from the demo page into your TiddlyWiki.
@@ -11,3 +13,15 @@ Press `e` if you want to edit the current tiddler. Press `Ctrl+Return` when you'
 `c` is for closing a tiddler.
 
 When you search your TiddlyWiki (`Ctrl+Shift+f` by default), just press `Return` to open or `Tab` to focus the first match (without this plugin you have to press `Tab` four times).
+
+## Adding / Changing keybinds
+You can bind keys to any of the tiddler buttons (permalink, export, etc). Here is how you do it:
+1. Install this plugin
+2. Refresh and find it in your Plugins tab in ControlPanel
+3. Open the keyboard-navigation.js file
+4. Near the top just edit the `bindings` variable for more functionality, or the `navigate_up_key` and `navigate_down_key` to change the keys used for navigation
+
+## Note on button functionality
+Your keybinds will only work when you have the corresponding buttons enabled in the View Toolbar. So for example, if you have `c` bound to close a tiddler, if you go to ```ControlPanel -> Appearance -> Toolbars -> View Toolbar``` and disable the close button, your `c` keybind will not work.
+
+This is because this functionality works by using the DOM elements (the toolbar buttons), so if you remove them, they can't be "clicked" by this plugin.

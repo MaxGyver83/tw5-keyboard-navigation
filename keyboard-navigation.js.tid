@@ -15,6 +15,35 @@ exports.name = "tw5-keyboard-navigation"; exports.after = ["rootwidget"];
 
 exports.startup = function () {
 
+// Keybinds section
+const navigate_up_key = 'k'
+const navigate_down_key = 'j'
+const bindings = {
+	more: null,
+	info: null,
+	'new-here': null,
+	'new-journal-here': null,
+	clone: null,
+	'export-tiddler': null,
+	edit: 'e',
+	delete: null,
+	permalink: null,
+	permaview: null,
+	'open-window': null,
+	'close-others': null,
+	close: 'c',
+	'fold-others': null,
+	fold: null
+}
+// if you're using an alternate keyboard layout, provide a list of key codes which should be ignored
+const alternateLayoutIgnoreKeys = ["ArrowUp"]
+// if you just want to add/change keybindings, you don't need to look further
+
+
+const BTN_CLASSNAME_PREFIX = 'tc-btn-%24%3A%2Fcore%2Fui%2FButtons%2F' // tiddler buttons have classnames in the form {BTN_CLASSNAME_PREFIX}{button name}
+const INSTANT_NAVIGATION = false; // all transitions with {navigate_up_key} and {navigate_down_key} are instant
+const INSTANT_NAVIGATION_BEFORE = 800; // if navigated before x milliseconds, transition is instant
+
 const MARK_CURRENT_TIDDLER = true;
 // tiddler's top position should be +/- LIMIT pixels in order to be considered the topmost
 const LIMIT = 50;
@@ -173,11 +202,13 @@ document.onkeyup = function(e) {
 	var tiddlerCycle = $tw.wiki.getTiddler("$:/config/Cycle");
 	cycle = (tiddlerCycle.fields.text.trim() == "1");
 
-	var j_released = ignoreKeyboardLayout ? (e.code == "KeyJ") : (e.key == "j");
-	var k_released = ignoreKeyboardLayout ? (e.code == "KeyK") : (e.key == "k");
-	var c_released = ignoreKeyboardLayout ? (e.code == "KeyC") : (e.key == "c");
-	// e: check for ArrowUp because AltGr+E is ArrowUp in Neo2, AdNW, KOY and other keyboard layouts
-	var e_released = ignoreKeyboardLayout ? (e.code == "KeyE" && e.key != "ArrowUp") : (e.key == "e");
+	var down_key_released = ignoreKeyboardLayout ? (e.code == ("Key" + navigate_down_key.toUpperCase())) : (e.key == navigate_down_key);
+	var up_key_released = ignoreKeyboardLayout ? (e.code == ("Key" + navigate_up_key.toUpperCase())) : (e.key == navigate_up_key);
+	var other_bind_used = Object.keys(bindings).find(k => {
+		if (!bindings[k]) return false;
+		if (ignoreKeyboardLayout) return e.code == ("Key" + bindings[k].toUpperCase()) && !alternateLayoutIgnoreKeys.find(ak => ak == e.key);
+		return e.key == bindings[k];
+	})
 
 	if (tiddler_title) {
 		if (tiddler_index < 0 || tiddler_index >= tiddlers.length || tiddlers[tiddler_index].getAttribute("data-tiddler-title") != tiddler_title) {
@@ -192,61 +223,56 @@ document.onkeyup = function(e) {
 		}
 	}
 	var last_tiddler_index = tiddler_index;
-	if (j_released || k_released) {
+
+	if (down_key_released || up_key_released || other_bind_used) {
 		if (tiddler_index < 0 || (!isInViewport(tiddlers[tiddler_index]) && !isElementCloseToTop(tiddlers[tiddler_index]))) {
 			tiddler_index = findTopmostTiddler(tiddlers);
-			if (j_released) tiddler_index -= 1;
+			if (down_key_released) tiddler_index -= 1;
 		}
-		if (j_released) {
-			// go down
-			tiddler_index += 1;
-			if (tiddler_index >= tiddlers.length) tiddler_index = cycle ? 0 : tiddlers.length - 1;
-		} else  {  // e.code == "KeyK"
-			// go up
-			tiddler_index -= 1;
-			if (tiddler_index < 0) tiddler_index = cycle ? tiddlers.length - 1 : 0;
-		}
-		if (Date.now() - timestamp_last_navigation < 800) { // milliseconds
-			// if user navigates quickly, jump instantly to next or previous tiddler
-			tiddlers[tiddler_index].scrollIntoView();
-		} else {
-			// scroll smoothly to next or previous tiddler
-			tiddlers[tiddler_index].scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"});
-		}
-		timestamp_last_navigation = Date.now();
-		if (MARK_CURRENT_TIDDLER) {
-			if (last_tiddler_index >= 0)
-				tiddlers[last_tiddler_index].classList.remove("activeTiddler");
-			tiddlers[tiddler_index].classList.add("activeTiddler");
-		}
-		getActiveTiddlersTitle();
-	} else if (c_released) {
-		// close current tiddler
-		if (tiddlers[tiddler_index] === undefined) return;
-		if (!isInViewport(tiddlers[tiddler_index])) return;
-		var button = tiddlers[tiddler_index].getElementsByClassName("tc-btn-%24%3A%2Fcore%2Fui%2FButtons%2Fclose")[0];
-		if (!button) return;
-		button.click();
-		if (tiddlers.length == 1) return;  // no tiddler left (after closing the only one)
-		// the next tiddler becomes the active one; if the last one was closed, the one before will be activated
-		if (tiddler_index >= tiddlers.length - 1) {
-			tiddler_index = tiddlers.length - 2;
-			if (MARK_CURRENT_TIDDLER)
+		if (down_key_released || up_key_released) {
+			if (down_key_released) {
+				// go down
+				tiddler_index += 1;
+				if (tiddler_index >= tiddlers.length) tiddler_index = cycle ? 0 : tiddlers.length - 1;
+			} else if (up_key_released) {
+				// go up
+				tiddler_index -= 1;
+				if (tiddler_index < 0) tiddler_index = cycle ? tiddlers.length - 1 : 0;
+			}
+			if (INSTANT_NAVIGATION || Date.now() - timestamp_last_navigation < INSTANT_NAVIGATION_BEFORE) {
+				// if user navigates quickly, or wants to navigate instantly, jump instantly to next or previous tiddler
+				tiddlers[tiddler_index].scrollIntoView();
+			} else {
+				// scroll smoothly to next or previous tiddler
+				tiddlers[tiddler_index].scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"});
+			}
+			timestamp_last_navigation = Date.now();
+			if (MARK_CURRENT_TIDDLER) {
+				if (last_tiddler_index >= 0)
+					tiddlers[last_tiddler_index].classList.remove("activeTiddler");
 				tiddlers[tiddler_index].classList.add("activeTiddler");
-		} else {
-			if (MARK_CURRENT_TIDDLER)
-				// use tiddler_index + 1 because the `tiddlers` array wasn't yet updated
-				tiddlers[tiddler_index+1].classList.add("activeTiddler");
+			}
+			getActiveTiddlersTitle();
 		}
-		getActiveTiddlersTitle();
-	} else if (e_released) {
-		// edit current tiddler
-		//tiddler_index = findTopmostTiddler(tiddlers);
-		if (tiddlers[tiddler_index] === undefined) return;
-		if (!isInViewport(tiddlers[tiddler_index])) return;
-		var button = tiddlers[tiddler_index].getElementsByClassName("tc-btn-%24%3A%2Fcore%2Fui%2FButtons%2Fedit")[0];
-		button.click();
-		getActiveTiddlersTitle();
+		else {
+			if (tiddlers[tiddler_index] === undefined) return;
+			if (!isInViewport(tiddlers[tiddler_index])) return;
+			var button = tiddlers[tiddler_index].getElementsByClassName(BTN_CLASSNAME_PREFIX+other_bind_used)[0];
+			if (!button) return;
+			button.click();
+			if ((other_bind_used == 'close' || other_bind_used == 'delete') && tiddlers.length > 1) {
+				if (tiddler_index >= tiddlers.length - 1) {
+					tiddler_index = tiddlers.length - 2;
+					if (MARK_CURRENT_TIDDLER)
+						tiddlers[tiddler_index].classList.add("activeTiddler");
+				} else {
+					if (MARK_CURRENT_TIDDLER)
+						// use tiddler_index + 1 because the `tiddlers` array wasn't yet updated
+						tiddlers[tiddler_index+1].classList.add("activeTiddler");
+				}
+			}
+			getActiveTiddlersTitle();
+		}
 	}
 };
 

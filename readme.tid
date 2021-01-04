@@ -1,5 +1,5 @@
 created: 20191103104315571
-modified: 20200601161649000
+modified: 20210104204500000
 tags: 
 title: $:/plugins/MaxGyver83/tw5-keyboard-navigation/readme
 
@@ -9,7 +9,7 @@ This plugin enables some global shortcuts for comfortable navigation without a m
 Press <kbd>Esc</kbd> to unfocus the sidebar search field.
 Then you can jump to the next or previous open tiddler in the story river by pressing <kbd>j</kbd> or <kbd>k</kbd>, respectively (inspired by [[vim|https://www.vim.org/]]).
 Press <kbd>e</kbd> if you want to edit the current tiddler. Press <kbd>Ctrl</kbd>+<kbd>Return</kbd> when you're done (as usual).
-<kbd>c</kbd> is for closing a tiddler.
+<kbd>c</kbd> is for closing a tiddler. <kbd>m</kbd> opens the "more tiddler actions" menu.
 
 When you search your TiddlyWiki (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>f</kbd> by default), just press <kbd>Return</kbd> to open or <kbd>Tab</kbd> to focus the first match (without this plugin you have to press <kbd>Tab</kbd> four times).
 
@@ -19,5 +19,6 @@ There is a public [[github repository|https://github.com/MaxGyver83/tw5-keyboard
 !! Author
 [[Max Schillinger|https://www.maximilian-schillinger.de]]
 
-!! Contributer
+!! Contributers
 [[Soren Bjornstad|https://github.com/sobjornstad]]
+[[Tadeáš Paule|https://github.com/tadeaspaule]]

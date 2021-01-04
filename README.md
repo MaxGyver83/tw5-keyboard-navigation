@@ -12,16 +12,16 @@ Then you can jump to the next or previous open tiddler in the story river by pre
 Press `e` if you want to edit the current tiddler. Press `Ctrl+Return` when you're done (as usual).
 `c` is for closing a tiddler.
 
-When you search your TiddlyWiki (`Ctrl+Shift+f` by default), just press `Return` to open or `Tab` to focus the first match (without this plugin you have to press `Tab` four times).
+When you search your TiddlyWiki (`Ctrl+Shift+f` by default), just press `Return` to open or `Tab` to focus the first match (without this plugin you have to press `Tab` four times). UPDATE: Since TW 5.1.23 you can focus the first match with the down arrow key (without this plugin).
 
 ## Adding / Changing keybinds
-You can bind keys to any of the tiddler buttons (permalink, export, etc). Here is how you do it:
+You can bind keys to any of the tiddler buttons (permalink, export, fold, info, etc). Here is how you do it:
 1. Install this plugin
 2. Refresh and find it in your Plugins tab in ControlPanel
-3. Open the keyboard-navigation.js file
+3. Open the tiddler `keyboard-navigation.js`
 4. Near the top just edit the `bindings` variable for more functionality, or the `navigate_up_key` and `navigate_down_key` to change the keys used for navigation
 
 ## Note on button functionality
-Your keybinds will only work when you have the corresponding buttons enabled in the View Toolbar. So for example, if you have `c` bound to close a tiddler, if you go to ```ControlPanel -> Appearance -> Toolbars -> View Toolbar``` and disable the close button, your `c` keybind will not work.
+Your keybinds will only work when you have the corresponding buttons enabled in `Appearance` → `Toolbars` → `View Toolbar`. Otherwise, you have to press first `m` for opening the "More actions" dropdown menu and then, with the close button visible, `c` for closing the tiddler (for example).
 
 This is because this functionality works by using the DOM elements (the toolbar buttons), so if you remove them, they can't be "clicked" by this plugin.

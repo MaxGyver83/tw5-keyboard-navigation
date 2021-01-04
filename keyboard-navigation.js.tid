@@ -197,7 +197,7 @@ document.onkeyup = function(e) {
 	cycle = (tiddlerCycle.fields.text.trim() == "1");
 
 	var down_key_released = e.key == navigate_up_key;
-	var up_key_released = e.key == navigate_down_key;
+	var up_key_released = e.key == navigate_up_key;
 	var other_bind_used = Object.keys(bindings).find(k => bindings[k] && e.key == bindings[k])
 
 	if (tiddler_title) {

@@ -26,7 +26,7 @@ const bindings = {
 	clone: null,
 	'export-tiddler': null,
 	edit: 'e',
-	delete: 'd',
+	delete: null,
 	permalink: null,
 	permaview: null,
 	'open-window': null,
@@ -35,6 +35,8 @@ const bindings = {
 	'fold-others': null,
 	fold: null
 }
+// if you're using an alternate keyboard layout, provide a list of key codes which should be ignored
+const alternateLayoutIgnoreKeys = ["ArrowUp"]
 // if you just want to add/change keybindings, you don't need to look further
 
 
@@ -46,6 +48,7 @@ const MARK_CURRENT_TIDDLER = true;
 // tiddler's top position should be +/- LIMIT pixels in order to be considered the topmost
 const LIMIT = 50;
 
+var ignoreKeyboardLayout = false;
 var cycle = false;
 var tiddlers;
 var tiddler_index = -1;
@@ -193,12 +196,19 @@ document.onkeyup = function(e) {
 	tiddlers = document.getElementsByClassName("tc-tiddler-frame");
 	if (tiddlers.length == 0) return;
 
+	var tiddlerIgnoreKeyboardLayout = $tw.wiki.getTiddler("$:/config/IgnoreKeyboardLayout");
+	ignoreKeyboardLayout = (tiddlerIgnoreKeyboardLayout.fields.text.trim() == "1");
+
 	var tiddlerCycle = $tw.wiki.getTiddler("$:/config/Cycle");
 	cycle = (tiddlerCycle.fields.text.trim() == "1");
 
-	var down_key_released = e.key == navigate_up_key;
-	var up_key_released = e.key == navigate_up_key;
-	var other_bind_used = Object.keys(bindings).find(k => bindings[k] && e.key == bindings[k])
+	var down_key_released = ignoreKeyboardLayout ? (e.code == ("Key" + navigate_down_key.toUpperCase())) : (e.key == navigate_down_key);
+	var up_key_released = ignoreKeyboardLayout ? (e.code == ("Key" + navigate_up_key.toUpperCase())) : (e.key == navigate_up_key);
+	var other_bind_used = Object.keys(bindings).find(k => {
+		if (!bindings[k]) return false;
+		if (ignoreKeyboardLayout) return e.code == ("Key" + bindings[k].toUpperCase()) && !alternateLayoutIgnoreKeys.find(k => k == e.key);
+		return e.key == bindings[k];
+	})
 
 	if (tiddler_title) {
 		if (tiddler_index < 0 || tiddler_index >= tiddlers.length || tiddlers[tiddler_index].getAttribute("data-tiddler-title") != tiddler_title) {
@@ -229,8 +239,8 @@ document.onkeyup = function(e) {
 				tiddler_index -= 1;
 				if (tiddler_index < 0) tiddler_index = cycle ? tiddlers.length - 1 : 0;
 			}
-			if (Date.now() - timestamp_last_navigation < INSTANT_NAVIGATION_BEFORE || INSTANT_NAVIGATION) {
-				// if user navigates quickly, jump instantly to next or previous tiddler
+			if (INSTANT_NAVIGATION || Date.now() - timestamp_last_navigation < INSTANT_NAVIGATION_BEFORE) {
+				// if user navigates quickly, or wants to navigate instantly, jump instantly to next or previous tiddler
 				tiddlers[tiddler_index].scrollIntoView();
 			} else {
 				// scroll smoothly to next or previous tiddler

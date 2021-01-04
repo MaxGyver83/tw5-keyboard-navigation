@@ -18,4 +18,4 @@ You can bind keys to any of the tiddler buttons (permalink, export, etc). Here i
 1. Install this plugin
 2. Refresh and find it in your Plugins tab in ControlPanel
 3. Open the keyboard-navigation.js file
-4. Near the top just edit the ```bindings``` variable for more functionality, or the ```navigate_up_key``` and ```navigate_down_key``` to change the keys used for navigation
+4. Near the top just edit the `bindings` variable for more functionality, or the `navigate_up_key` and `navigate_down_key` to change the keys used for navigation

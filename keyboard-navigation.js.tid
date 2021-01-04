@@ -275,8 +275,9 @@ document.onkeyup = function(e) {
 			if (!button) return;
 			button.click();
 			if ((other_bind_used == 'close' || other_bind_used == 'delete') && tiddlers.length > 1) {
-				if (tiddler_index >= tiddlers.length - 1) {
-					tiddler_index = tiddlers.length - 2;
+				tiddlers[tiddler_index].classList.remove("activeTiddler");
+				if (tiddler_index >= tiddlers.length - 1) { // last tiddler selected
+					tiddler_index = tiddlers.length - 2; // select second to last tiddler
 					if (MARK_CURRENT_TIDDLER)
 						tiddlers[tiddler_index].classList.add("activeTiddler");
 				} else {

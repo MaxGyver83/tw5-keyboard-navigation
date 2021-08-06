@@ -10,9 +10,11 @@ Check [this demonstration](https://maximilian-schillinger.de/tw5-keyboard-naviga
 Press `Esc` to unfocus the sidebar search field.
 Then you can jump to the next or previous open tiddler in the story river by pressing `j` or `k`, respectively.
 Press `e` if you want to edit the current tiddler. Press `Ctrl+Return` when you're done (as usual).
-`c` is for closing a tiddler.
+`c` is for closing a tiddler. `m` opens the "more tiddler actions" menu.
 
 When you search your TiddlyWiki (`Ctrl+Shift+f` by default), just press `Return` to open or `Tab` to focus the first match (without this plugin you have to press `Tab` four times). UPDATE: Since TW 5.1.23 you can focus the first match with the down arrow key (without this plugin).
+
+`Esc` also closes the search result popup window or "more tiddler actions" menu.
 
 ## Adding / Changing keybinds
 You can bind keys to any of the tiddler buttons (permalink, export, fold, info, etc). Here is how you do it:

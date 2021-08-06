@@ -1,5 +1,5 @@
 created: 20191026223026465
-modified: 20210104200004000
+modified: 20210806201700000
 module-type: startup
 tags: 
 title: keyboard-navigation.js
@@ -72,35 +72,37 @@ if (tiddlers.length > 0) {
 }
 
 
-// refresh active tiddler marker after page refresh (p.e. after editing a tiddler)
+// refresh active tiddler marker after page refresh (p.e. after closing or editing a tiddler)
 $tw.hooks.addHook("th-page-refreshed", function() {
-	if (MARK_CURRENT_TIDDLER && tiddler_index >= 0) {
-		tiddlers = document.getElementsByClassName("tc-tiddler-frame");
-		var index = -1;
-		for (var i=0; i<tiddlers.length; i++) {
-			if (tiddlers[i].getAttribute("data-tiddler-title") == tiddler_title) {
-				tiddlers[i].classList.add("activeTiddler");
-				index = i;
-			} else {
-				tiddlers[i].classList.remove("activeTiddler");
-			}
-		}
-		if (index >= 0 && tiddlers[index].style.opacity === "0") {
-			// Apparently the activated tiddler was closed. Select next one.
-			tiddlers[index].classList.remove("activeTiddler");
-			if (tiddlers.length <= 1) {
-				// no tiddler left (because the last one is invisible)
-				tiddler_index = -1;
-				tiddler_title = "";
-				return;
-			}
-			if (index + 1 < tiddlers.length) { index++; }
-			else { index--; }
-			tiddlers[index].classList.add("activeTiddler");
-			tiddler_index = index;
-			tiddler_title = tiddlers[index].getAttribute("data-tiddler-title");
+	tiddlers = document.getElementsByClassName("tc-tiddler-frame");
+
+	if (!MARK_CURRENT_TIDDLER) return;
+	if (tiddler_index < 0 && tiddlers.length) tiddler_index = 0;
+
+	// if tiddler_index > last_visible_index, select the last visible tiddler
+	var last_visible_index = tiddlers.length - 1;
+	while (last_visible_index >= 0 && tiddlers[last_visible_index].style.opacity === "0") {
+		last_visible_index--;  // might be -1
+	}
+	if (tiddler_index > last_visible_index) {
+		tiddler_index = last_visible_index;
+	}
+	if (tiddler_index < 0) return;
+
+	// if the current tiddler is invisible, find the next visible one
+	var i = tiddler_index;
+	while (i < tiddlers.length && tiddlers[i].style.opacity === "0") {
+		i++;
+	}
+	// if no visible tiddler was found, search upwards
+	if (i == tiddlers.length) {
+		i = tiddler_index;
+		while (i >= 0 && tiddlers[i].style.opacity === "0") {
+			i--;
 		}
 	}
+	tiddler_index = i;
+	updateActiveTiddlerClass();
 });
 
 
@@ -130,8 +132,17 @@ $tw.hooks.addHook("th-navigating", function(event) {
 });
 
 
+function updateActiveTiddlerClass() {
+	for (var i=0; i<tiddlers.length; i++) {
+		if (i != tiddler_index) {
+			tiddlers[i].classList.remove("activeTiddler");
+		}
+	}
+	tiddlers[tiddler_index].classList.add("activeTiddler");
+}
+
 function getActiveTiddlersTitle() {
-	tiddler_title = tiddlers[tiddler_index].getAttribute("data-tiddler-title");
+	tiddler_title = (tiddler_index < 0) ? "" : tiddlers[tiddler_index].getAttribute("data-tiddler-title");
 }
 
 
@@ -156,6 +167,45 @@ function findTopmostTiddler(tiddlers) {
 		i++;
 	}
 	return i;
+}
+
+
+function switchTiddler(scrollTo) {
+	if (scrollTo) {
+		if (INSTANT_NAVIGATION ||
+				Date.now() - timestamp_last_navigation < INSTANT_NAVIGATION_BEFORE) {
+			// if user navigates quickly or wants to navigate instantly,
+			// jump instantly to next or previous tiddler
+			tiddlers[tiddler_index].scrollIntoView();
+		} else {
+			// scroll smoothly to next or previous tiddler
+			tiddlers[tiddler_index].scrollIntoView(
+				{behavior: "smooth", block: "start", inline: "nearest"});
+		}
+	}
+	timestamp_last_navigation = Date.now();
+	if (MARK_CURRENT_TIDDLER) {
+		updateActiveTiddlerClass();
+	}
+	getActiveTiddlersTitle();
+}
+
+document.onclick = function(e) {
+	var elem = e.target;
+
+	while (elem && !elem.classList.contains("tc-tiddler-frame")) {
+		elem = elem.parentElement;
+	}
+	if (!elem) return;
+	const titleOfClickedTiddler = elem.getAttribute("data-tiddler-title");
+	tiddlers = document.getElementsByClassName("tc-tiddler-frame");
+	for (var i=0; i<tiddlers.length; i++) {
+		if (tiddlers[i].getAttribute("data-tiddler-title") == titleOfClickedTiddler) {
+			tiddler_index = i;
+			switchTiddler(false);
+			return;
+		}
+	}
 }
 
 
@@ -189,12 +239,30 @@ document.onkeyup = function(e) {
 	if (activeElement && activeElement.tagName.toLowerCase() == "textarea") return;
 	if (activeElement && activeElement.tagName.toLowerCase() == "input") {
 		if (e.code == "Escape") {
+			// check if search drop down menu is open
+			var dropdown = document.querySelector("div.tc-search-drop-down");
+			if (dropdown) {
+				// if (dropdown[0].classList.contains
+				var elem = dropdown.parentNode.parentNode;
+				elem.querySelector("svg.tc-image-close-button");
+				if (elem && elem.parentNode) {
+					elem.parentNode.click();
+				}
+			}
 			// unfocus search box
 			activeElement.blur();
 			//window.focus();
 		}
 		return;
 	}
+	if (e.code == "Escape") {
+		// menu = document.getElementsByClassName("tc-drop-down");
+		var menu = document.querySelector("div.tc-drop-down");
+		if (menu) {
+			menu.parentElement.previousSibling.click();
+		}
+	}
+
 
 	tiddlers = document.getElementsByClassName("tc-tiddler-frame");
 	if (tiddlers.length == 0) return;
@@ -221,7 +289,7 @@ document.onkeyup = function(e) {
 		if (tiddler_index < 0 || tiddler_index >= tiddlers.length ||
 		        tiddlers[tiddler_index].getAttribute("data-tiddler-title") != tiddler_title) {
 			tiddler_index = -1;
-		// find correct index (after editing or creating a new tiddler)
+			// find correct index (after editing or creating a new tiddler)
 			for (var i=0; i<tiddlers.length; i++) {
 				if (tiddlers[i].getAttribute("data-tiddler-title") == tiddler_title) {
 					tiddler_index = i;
@@ -230,7 +298,6 @@ document.onkeyup = function(e) {
 			}
 		}
 	}
-	var last_tiddler_index = tiddler_index;
 
 	if (down_key_released || up_key_released || other_bind_used) {
 		if (tiddler_index < 0 || (!isInViewport(tiddlers[tiddler_index]) &&
@@ -250,23 +317,7 @@ document.onkeyup = function(e) {
 				if (tiddler_index < 0)
 					tiddler_index = cycle ? tiddlers.length - 1 : 0;
 			}
-			if (INSTANT_NAVIGATION ||
-					Date.now() - timestamp_last_navigation < INSTANT_NAVIGATION_BEFORE) {
-				// if user navigates quickly or wants to navigate instantly,
-				// jump instantly to next or previous tiddler
-				tiddlers[tiddler_index].scrollIntoView();
-			} else {
-				// scroll smoothly to next or previous tiddler
-				tiddlers[tiddler_index].scrollIntoView(
-					{behavior: "smooth", block: "start", inline: "nearest"});
-			}
-			timestamp_last_navigation = Date.now();
-			if (MARK_CURRENT_TIDDLER) {
-				if (last_tiddler_index >= 0)
-					tiddlers[last_tiddler_index].classList.remove("activeTiddler");
-				tiddlers[tiddler_index].classList.add("activeTiddler");
-			}
-			getActiveTiddlersTitle();
+			switchTiddler(true);
 		} else {
 			if (tiddlers[tiddler_index] === undefined) return;
 			if (!isInViewport(tiddlers[tiddler_index])) return;
@@ -274,16 +325,20 @@ document.onkeyup = function(e) {
 							getElementsByClassName(BTN_CLASSNAME_PREFIX+other_bind_used)[0];
 			if (!button) return;
 			button.click();
-			if ((other_bind_used == 'close' || other_bind_used == 'delete') && tiddlers.length > 1) {
+			if (other_bind_used == 'close' || other_bind_used == 'delete') {
 				tiddlers[tiddler_index].classList.remove("activeTiddler");
-				if (tiddler_index >= tiddlers.length - 1) { // last tiddler selected
-					tiddler_index = tiddlers.length - 2; // select second to last tiddler
-					if (MARK_CURRENT_TIDDLER)
-						tiddlers[tiddler_index].classList.add("activeTiddler");
-				} else {
-					if (MARK_CURRENT_TIDDLER)
-						// use tiddler_index + 1 because the `tiddlers` array wasn't yet updated
-						tiddlers[tiddler_index+1].classList.add("activeTiddler");
+				if (tiddlers.length == 1) {
+					tiddler_index = -1;
+				} else { // tiddlers.length >= 2
+					if (tiddler_index >= tiddlers.length - 1) { // last tiddler selected
+						tiddler_index = tiddlers.length - 2; // select second to last tiddler
+						if (MARK_CURRENT_TIDDLER)
+							tiddlers[tiddler_index].classList.add("activeTiddler");
+					} else {
+						if (MARK_CURRENT_TIDDLER)
+							// use tiddler_index + 1 because the `tiddlers` array wasn't yet updated
+							tiddlers[tiddler_index+1].classList.add("activeTiddler");
+					}
 				}
 			}
 			getActiveTiddlersTitle();

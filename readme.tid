@@ -1,5 +1,5 @@
 created: 20191103104315571
-modified: 20210104204500000
+modified: 20210806213200000
 tags: 
 title: $:/plugins/MaxGyver83/tw5-keyboard-navigation/readme
 
@@ -12,6 +12,8 @@ Press <kbd>e</kbd> if you want to edit the current tiddler. Press <kbd>Ctrl</kbd
 <kbd>c</kbd> is for closing a tiddler. <kbd>m</kbd> opens the "more tiddler actions" menu.
 
 When you search your TiddlyWiki (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>f</kbd> by default), just press <kbd>Return</kbd> to open or <kbd>Tab</kbd> to focus the first match (without this plugin you have to press <kbd>Tab</kbd> four times).
+
+<kbd>Esc</kbd> also closes the search result popup window or "more tiddler actions" menu.
 
 !! Source code
 There is a public [[github repository|https://github.com/MaxGyver83/tw5-keyboard-navigation]] for `tw5-keyboard-navigation`.

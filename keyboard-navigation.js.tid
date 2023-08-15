@@ -1,5 +1,5 @@
 created: 20191026223026465
-modified: 20220102121700000
+modified: 20230815092400000
 module-type: startup
 tags: 
 title: keyboard-navigation.js
@@ -214,6 +214,8 @@ document.onclick = function(e) {
 document.onkeydown = function(e) {
 	if (e.repeat) return;
 	if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
+	if (e.target.className == "tc-tiddler-preview") return;
+	if (e.target.tagName.toLowerCase() == "div") return;
 
 	var activeElement = document.activeElement;
 	if (activeElement) {
@@ -312,6 +314,8 @@ document.onkeydown = function(e) {
 
 document.onkeyup = function(e) {
 	if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
+	if (e.target.className == "tc-tiddler-preview") return;
+	if (e.target.tagName.toLowerCase() == "div") return;
 
 	var activeElement = document.activeElement;
 	if (activeElement && activeElement.tagName.toLowerCase() == "textarea") return;

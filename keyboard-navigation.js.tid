@@ -1,5 +1,5 @@
 created: 20191026223026465
-modified: 20230815092400000
+modified: 20231007192800000
 module-type: startup
 tags: 
 title: keyboard-navigation.js
@@ -79,29 +79,31 @@ $tw.hooks.addHook("th-page-refreshed", function() {
 	if (!MARK_CURRENT_TIDDLER) return;
 	if (tiddler_index < 0 && tiddlers.length) tiddler_index = 0;
 
-	// if tiddler_index > last_visible_index, select the last visible tiddler
-	var last_visible_index = tiddlers.length - 1;
-	while (last_visible_index >= 0 && tiddlers[last_visible_index].style.opacity === "0") {
-		last_visible_index--;  // might be -1
-	}
-	if (tiddler_index > last_visible_index) {
-		tiddler_index = last_visible_index;
-	}
-	if (tiddler_index < 0) return;
-
-	// if the current tiddler is invisible, find the next visible one
-	var i = tiddler_index;
-	while (i < tiddlers.length && tiddlers[i].style.opacity === "0") {
-		i++;
-	}
-	// if no visible tiddler was found, search upwards
-	if (i == tiddlers.length) {
-		i = tiddler_index;
-		while (i >= 0 && tiddlers[i].style.opacity === "0") {
-			i--;
+	if (!markTiddlerByTitle()) {
+		// if tiddler_index > last_visible_index, select the last visible tiddler
+		var last_visible_index = tiddlers.length - 1;
+		while (last_visible_index >= 0 && tiddlers[last_visible_index].style.opacity === "0") {
+			last_visible_index--;  // might be -1
 		}
+		if (tiddler_index > last_visible_index) {
+			tiddler_index = last_visible_index;
+		}
+		if (tiddler_index < 0) return;
+
+		// if the current tiddler is invisible, find the next visible one
+		var i = tiddler_index;
+		while (i < tiddlers.length && tiddlers[i].style.opacity === "0") {
+			i++;
+		}
+		// if no visible tiddler was found, search upwards
+		if (i == tiddlers.length) {
+			i = tiddler_index;
+			while (i >= 0 && tiddlers[i].style.opacity === "0") {
+				i--;
+			}
+		}
+		tiddler_index = i;
 	}
-	tiddler_index = i;
 	updateActiveTiddlerClass();
 });
 
@@ -116,20 +118,27 @@ $tw.hooks.addHook("th-saving-tiddler", function(tiddler) {
 // mark new tiddler after navigating to it
 $tw.hooks.addHook("th-navigating", function(event) {
 	tiddler_title = event.navigateTo;
+	markTiddlerByTitle();
+	return event;
+});
+
+
+function markTiddlerByTitle() {
 	tiddlers = document.getElementsByClassName("tc-tiddler-frame");
 	for (var i=0; i<tiddlers.length; i++) {
-		if (tiddlers[i].getAttribute("data-tiddler-title") == tiddler_title) {
+		if (tiddlers[i].getAttribute("data-tiddler-title") == tiddler_title
+				&& tiddlers[i].style.opacity === "1") {
 			if (MARK_CURRENT_TIDDLER) {
 				if (tiddlers[tiddler_index] !== undefined)
 					tiddlers[tiddler_index].classList.remove("activeTiddler");
 				tiddlers[i].classList.add("activeTiddler");
 			}
 			tiddler_index = i;
-			break;
+			return true;
 		}
 	}
-	return event;
-});
+	return false;
+}
 
 
 function updateActiveTiddlerClass() {
